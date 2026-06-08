@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Feedback da Apresentação</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  background: white;
+  width: 100%;
+  max-width: 700px;
+  padding: 20px;
+  border-radius: 15px;
+}
+
+h1 { text-align: center; }
+
+input, textarea, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  background: #667eea;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #556cd6;
+}
+
+.feedback-item {
+  background: #f2f2f2;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+
+.admin { display: none; }
+
+canvas {
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Feedback da Apresentação</h1>
+
+<input id="nome" placeholder="Nome">
+<select id="nota">
+  <option>5</option>
+  <option>4</option>
+  <option>3</option>
+  <option>2</option>
+  <option>1</option>
+</select>
+
+<textarea id="fortes" placeholder="Pontos fortes"></textarea>
+<textarea id="melhorar" placeholder="A melhorar"></textarea>
+
+<button onclick="enviar()">Enviar</button>
+
+<hr>
+
+<h3>Área Admin</h3>
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Entrar</button>
+
+<div class="admin" id="admin">
+
+<h3>Feedbacks</h3>
+<div id="lista"></div>
+
+<button onclick="apagar()">Apagar tudo</button>
+
+<h3>Média</h3>
+<div id="media"></div>
+
+<canvas id="grafico"></canvas>
+
+</div>
+
+</div>
+
+<script>
+
+const PASSWORD = "1234";
+
+function enviar() {
+  let dados = JSON.parse(localStorage.getItem("fb")) || [];
+
+  dados.push({
+    nome: nome.value,
+    nota: Number(nota.value),
+    fortes: fortes.value,
+    melhorar: melhorar.value
+  });
+
+  localStorage.setItem("fb", JSON.stringify(dados));
+
+  alert("Enviado!");
+}
+
+function login() {
+  if (pass.value !== PASSWORD) {
+    alert("Errado!");
+    return;
+  }
+
+  admin.style.display = "block";
+  mostrar();
+}
+
+function mostrar() {
+  let dados = JSON.parse(localStorage.getItem("fb")) || [];
+  lista.innerHTML = "";
+
+  let soma = 0;
+
+  dados.forEach(d => {
+    soma += d.nota;
+
+    lista.innerHTML += `
+      <div class="feedback-item">
+        <b>${d.nome}</b><br>
+        Nota: ${d.nota}<br>
+        ${d.fortes}<br>
+        ${d.melhorar}
+      </div>
+    `;
+  });
+
+  let media = dados.length ? (soma / dados.length).toFixed(2) : 0;
+  media.innerHTML = "Média: " + media;
+
+  grafico(dados);
+}
+
+function apagar() {
+  localStorage.removeItem("fb");
+  location.reload();
+}
+
+function grafico(dados) {
+  let notas = [0,0,0,0,0];
+
+  dados.forEach(d => notas[5-d.nota]++);
+
+  new Chart(document.getElementById("grafico"), {
+    type: "bar",
+    data: {
+      labels: ["5","4","3","2","1"],
+      datasets: [{
+        label: "Notas",
+        data: notas,
+        backgroundColor: "#667eea"
+      }]
+    }
+  });
+}
+
+</script>
+
+</body>
+</html>
